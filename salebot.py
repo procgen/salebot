@@ -18,6 +18,17 @@ REGEX = config["General"]["regex"]
 
 sc = SlackClient(SLACK_TOKEN)
 
+conn = sqlite3.connect("salebot.db")
+c = conn.cursor()
+
+reddit = praw.Reddit(user_agent="Test reddit parser", client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+
+try:
+	c.execute("CREATE TABLE posts (subreddit text, id text)")
+	conn.commit()
+except sqlite3.OperationalError:
+	pass #If the table already exists do nothing
+
 def pushNotify(message):
 	sc.api_call(
 	"chat.postMessage",
@@ -34,20 +45,17 @@ def scanSubmission(submission, regex):
 	else:
 		return False
 
-reddit = praw.Reddit(user_agent="Test reddit parser", client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
-
-print(reddit.read_only)
-
-readTitles = []
-
 while True:
 	print("START!")
 	for subname in config["Subreddits"]:
 		print("Searching sub: " + subname)
 		for submission in reddit.subreddit(subname).new(limit=10):
-			if submission.id in readTitles:
+			c.execute("SELECT * FROM posts WHERE subreddit=? AND id=?", [subname, submission.id])
+			if c.fetchone():
 				break
-			readTitles.append(submission.id)
+			c.execute("INSERT INTO posts (subreddit, id) VALUES (?, ?)", [subname, submission.id])
+			conn.commit()
 			if scanSubmission(submission, REGEX):
 				print(submission.title)
 	time.sleep(SLEEP_TIME)
+	
