@@ -1,6 +1,6 @@
 from slackclient import SlackClient
 import configparser
-import praw, time, sqlite3
+import praw, time, sqlite3, re
 
 config = configparser.ConfigParser(allow_no_value=True)
 
@@ -13,6 +13,9 @@ USER_CHANNEL = config["SlackAccount"]["channel"]
 CLIENT_ID = config["RedditAccount"]["client_id"]
 CLIENT_SECRET = config["RedditAccount"]["client_secret"]
 
+SLEEP_TIME = int(config["General"]["sleep"])
+REGEX = config["General"]["regex"]
+
 sc = SlackClient(SLACK_TOKEN)
 
 def pushNotify(message):
@@ -24,7 +27,13 @@ def pushNotify(message):
 	text=message
 	)
 
-#pushNotify("Post generic message")
+def scanSubmission(submission, regex):
+	match = re.search(regex, submission.title, re.I)
+	if match:
+		return True
+	else:
+		return False
+
 reddit = praw.Reddit(user_agent="Test reddit parser", client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
 print(reddit.read_only)
@@ -39,9 +48,6 @@ while True:
 			if submission.id in readTitles:
 				break
 			readTitles.append(submission.id)
-			print("-----------")
-			print(submission.title)
-			print(submission.url)
-			print(submission.id)
-			print("-----------")
-	time.sleep(10)
+			if scanSubmission(submission, REGEX):
+				print(submission.title)
+	time.sleep(SLEEP_TIME)
