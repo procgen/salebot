@@ -2,7 +2,7 @@ from slackclient import SlackClient
 import configparser
 import praw, time, sqlite3
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser(allow_no_value=True)
 
 config.read("settings.ini")
 SLACK_TOKEN = config["SlackAccount"]["token"]
@@ -31,16 +31,17 @@ print(reddit.read_only)
 
 readTitles = []
 
-subreddit = reddit.subreddit("GameDeals")
 while True:
 	print("START!")
-	for submission in subreddit.new(limit=10):
-		if submission.id in readTitles:
-			break
-		readTitles.append(submission.id)
-		print("-----------")
-		print(submission.title)
-		print(submission.url)
-		print(submission.id)
-		print("-----------")
+	for subname in config["Subreddits"]:
+		print("Searching sub: " + subname)
+		for submission in reddit.subreddit(subname).new(limit=10):
+			if submission.id in readTitles:
+				break
+			readTitles.append(submission.id)
+			print("-----------")
+			print(submission.title)
+			print(submission.url)
+			print(submission.id)
+			print("-----------")
 	time.sleep(10)
