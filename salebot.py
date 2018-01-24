@@ -38,6 +38,13 @@ def pushNotify(message):
 	text=message
 	)
 
+def sendNotification(submission, subname):
+	string = ""
+	string += submission.title + "\n"
+	string += "Subreddit: " + subname + "\n"
+	string += "https://www.reddit.com/r/" + subname + "/comments/" + submission.id + "/"
+	pushNotify(string)
+
 def scanSubmission(submission, regex):
 	match = re.search(regex, submission.title, re.I)
 	if match:
@@ -56,6 +63,6 @@ while True:
 			c.execute("INSERT INTO posts (subreddit, id) VALUES (?, ?)", [subname, submission.id])
 			conn.commit()
 			if scanSubmission(submission, REGEX):
-				print(submission.title)
+				sendNotification(submission, subname)
 	time.sleep(SLEEP_TIME)
 	
