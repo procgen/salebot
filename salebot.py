@@ -15,6 +15,7 @@ CLIENT_SECRET = config["RedditAccount"]["client_secret"]
 
 SLEEP_TIME = int(config["General"]["sleep"])
 REGEX = config["General"]["regex"]
+POST_LIMIT = config["General"]["postlimit"]
 
 sc = SlackClient(SLACK_TOKEN)
 
@@ -56,7 +57,7 @@ while True:
 	print("START!")
 	for subname in config["Subreddits"]:
 		print("Searching sub: " + subname)
-		for submission in reddit.subreddit(subname).new(limit=10):
+		for submission in reddit.subreddit(subname).new(limit=int(POST_LIMIT)):
 			c.execute("SELECT * FROM posts WHERE subreddit=? AND id=?", [subname, submission.id])
 			if c.fetchone():
 				break
