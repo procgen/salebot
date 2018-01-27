@@ -16,6 +16,7 @@ CLIENT_SECRET = config["RedditAccount"]["client_secret"]
 SLEEP_TIME = int(config["General"]["sleep"])
 REGEX = config["General"]["regex"]
 POST_LIMIT = config["General"]["postlimit"]
+CONSOLE_LOG = config["General"]["consolelog"]
 
 sc = SlackClient(SLACK_TOKEN)
 
@@ -29,6 +30,11 @@ try:
 	conn.commit()
 except sqlite3.OperationalError:
 	pass #If the table already exists do nothing
+
+def printlog(message):
+	if CONSOLE_LOG.lower() == "true": #python is kinda weird about string bools
+		print(CONSOLE_LOG)
+		print(message)
 
 def pushNotify(message):
 	sc.api_call(
@@ -54,9 +60,9 @@ def scanSubmission(submission, regex):
 		return False
 
 while True:
-	print("START!")
+	printlog("Searching subreddits for new deals . . .")
 	for subname in config["Subreddits"]:
-		print("Searching sub: " + subname)
+		printlog("Searching sub: " + subname)
 		for submission in reddit.subreddit(subname).new(limit=int(POST_LIMIT)):
 			c.execute("SELECT * FROM posts WHERE subreddit=? AND id=?", [subname, submission.id])
 			if c.fetchone():
@@ -65,5 +71,6 @@ while True:
 			conn.commit()
 			if scanSubmission(submission, REGEX):
 				sendNotification(submission, subname)
+				printlog("Sent notification for submission: " + submission.id)
 	time.sleep(SLEEP_TIME)
 	
