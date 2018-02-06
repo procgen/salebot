@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from slackclient import SlackClient
 import configparser
 import praw, time, sqlite3, re
