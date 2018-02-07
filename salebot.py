@@ -35,7 +35,6 @@ except sqlite3.OperationalError:
 
 def printlog(message):
 	if CONSOLE_LOG.lower() == "true": #python is kinda weird about string bools
-		print(CONSOLE_LOG)
 		print(message)
 
 def pushNotify(message):
