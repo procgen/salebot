@@ -61,9 +61,8 @@ def scanSubmission(submission, regex):
 		return False
 
 breakLoop = False
-for key in config["General"]:
-	if key.lower() == "noloop":
-		breakLoop = True
+if "noloop" in config["General"]:
+	breakLoop = True
 
 while True:
 	printlog("Searching subreddits for new deals . . .")
