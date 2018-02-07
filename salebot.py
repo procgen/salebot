@@ -60,6 +60,11 @@ def scanSubmission(submission, regex):
 	else:
 		return False
 
+breakLoop = False
+for key in config["General"]:
+	if key.lower() == "noloop":
+		breakLoop = True
+
 while True:
 	printlog("Searching subreddits for new deals . . .")
 	for subname in config["Subreddits"]:
@@ -73,5 +78,8 @@ while True:
 			if scanSubmission(submission, REGEX):
 				sendNotification(submission, subname)
 				printlog("Sent notification for submission: " + submission.id)
+	if breakLoop:
+		break
 	time.sleep(SLEEP_TIME)
 	
+printlog("Done.")
