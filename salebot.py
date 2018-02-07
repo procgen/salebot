@@ -18,7 +18,7 @@ CLIENT_SECRET = config["RedditAccount"]["client_secret"]
 SLEEP_TIME = int(config["General"]["sleep"])
 REGEX = config["General"]["regex"]
 POST_LIMIT = config["General"]["postlimit"]
-CONSOLE_LOG = config["General"]["consolelog"]
+CONSOLE_LOG = "consolelog" in config["General"]
 
 sc = SlackClient(SLACK_TOKEN)
 
@@ -34,7 +34,7 @@ except sqlite3.OperationalError:
 	pass #If the table already exists do nothing
 
 def printlog(message):
-	if CONSOLE_LOG.lower() == "true": #python is kinda weird about string bools
+	if CONSOLE_LOG:
 		print(message)
 
 def pushNotify(message):
