@@ -60,9 +60,7 @@ def scanSubmission(submission, regex):
 	else:
 		return False
 
-breakLoop = False
-if "noloop" in config["General"]:
-	breakLoop = True
+breakLoop = "noloop" in config["General"]
 
 while True:
 	printlog("Searching subreddits for new deals . . .")
