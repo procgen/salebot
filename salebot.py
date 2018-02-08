@@ -32,7 +32,7 @@ c = conn.cursor()
 reddit = praw.Reddit(user_agent="Test reddit parser", client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
 try:
-	c.execute("CREATE TABLE posts (subreddit text, id text)")
+	c.execute("CREATE TABLE posts (configname text, subreddit text, id text)")
 	conn.commit()
 except sqlite3.OperationalError:
 	pass #If the table already exists do nothing
@@ -71,10 +71,10 @@ while True:
 	for subname in config["Subreddits"]:
 		printlog("Searching sub: " + subname)
 		for submission in reddit.subreddit(subname).new(limit=int(POST_LIMIT)):
-			c.execute("SELECT * FROM posts WHERE subreddit=? AND id=?", [subname, submission.id])
+			c.execute("SELECT * FROM posts WHERE configname=? AND subreddit=? AND id=?", [CONFIG_NAME, subname, submission.id])
 			if c.fetchone():
 				break
-			c.execute("INSERT INTO posts (subreddit, id) VALUES (?, ?)", [subname, submission.id])
+			c.execute("INSERT INTO posts (configname, subreddit, id) VALUES (?, ?, ?)", [CONFIG_NAME, subname, submission.id])
 			conn.commit()
 			if scanSubmission(submission, REGEX):
 				sendNotification(submission, subname)
