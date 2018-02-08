@@ -2,11 +2,15 @@
 
 from slackclient import SlackClient
 import configparser
-import praw, time, sqlite3, re
+import praw, time, sqlite3, re, sys
 
 config = configparser.ConfigParser(allow_no_value=True)
 
-config.read("settings.ini")
+CONFIG_NAME = "settings.ini"
+if len(sys.argv) > 1:
+	CONFIG_NAME = sys.argv[1]
+
+config.read(CONFIG_NAME)
 SLACK_TOKEN = config["SlackAccount"]["token"]
 USERNAME = config["SlackAccount"]["username"]
 USER_ICON = config["SlackAccount"]["icon"]
