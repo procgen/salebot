@@ -4,5 +4,6 @@
 /local
 *.json
 *.db
-settings.ini
+*.ini
+!settings-default.ini
 
