@@ -2,7 +2,7 @@
 
 from slackclient import SlackClient
 import configparser
-import praw, time, sqlite3, re, sys
+import praw, time, re, sys
 
 config = configparser.ConfigParser(allow_no_value=True)
 
@@ -24,18 +24,11 @@ REGEX = config["General"]["regex"]
 POST_LIMIT = config["General"]["postlimit"]
 CONSOLE_LOG = "consolelog" in config["General"]
 
+LASTRUN = config["Data"]["lastrun"]
+
 sc = SlackClient(SLACK_TOKEN)
 
-conn = sqlite3.connect("salebot.db")
-c = conn.cursor()
-
 reddit = praw.Reddit(user_agent="Test reddit parser", client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
-
-try:
-	c.execute("CREATE TABLE posts (configname text, subreddit text, id text)")
-	conn.commit()
-except sqlite3.OperationalError:
-	pass #If the table already exists do nothing
 
 def printlog(message):
 	if CONSOLE_LOG:
@@ -68,17 +61,20 @@ breakLoop = "noloop" in config["General"]
 
 while True:
 	printlog("Searching subreddits for new deals . . .")
+	startTime = time.time()
 	for subname in config["Subreddits"]:
 		printlog("Searching sub: " + subname)
 		for submission in reddit.subreddit(subname).new(limit=int(POST_LIMIT)):
-			c.execute("SELECT * FROM posts WHERE configname=? AND subreddit=? AND id=?", [CONFIG_NAME, subname, submission.id])
-			if c.fetchone():
+			print(submission.created_utc, ":", LASTRUN)
+			if submission.created_utc < float(LASTRUN):
 				break
-			c.execute("INSERT INTO posts (configname, subreddit, id) VALUES (?, ?, ?)", [CONFIG_NAME, subname, submission.id])
-			conn.commit()
 			if scanSubmission(submission, REGEX):
 				sendNotification(submission, subname)
 				printlog("Sent notification for submission: " + submission.id)
+	LASTRUN = startTime
+	config["Data"]["lastrun"] = str(startTime)
+	with open('settings.ini', 'wb') as configfile:
+		config.write(configfile)
 	if breakLoop:
 		break
 	time.sleep(SLEEP_TIME)
