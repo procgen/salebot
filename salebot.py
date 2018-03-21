@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 from slackclient import SlackClient
-import configparser
-import praw, time, re, sys
+import configparser, praw, time, re, sys
 
 config = configparser.ConfigParser(allow_no_value=True)
 
