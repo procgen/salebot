@@ -65,7 +65,6 @@ while True:
 	for subname in config["Subreddits"]:
 		printlog("Searching sub: " + subname)
 		for submission in reddit.subreddit(subname).new(limit=int(POST_LIMIT)):
-			print(submission.created_utc, ":", LASTRUN)
 			if submission.created_utc < float(LASTRUN):
 				break
 			if scanSubmission(submission, REGEX):
